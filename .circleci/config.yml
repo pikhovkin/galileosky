@@ -3,7 +3,7 @@ version: 2
 jobs:
   "python-3.6": &test-template
     docker:
-      - image: circleci/python:3.6-stretch-browsers
+      - image: circleci/python:3.6
         environment:
           TOX: py36
           TOX_PYTHON_36: python
@@ -41,7 +41,7 @@ jobs:
   "python-3.7":
     <<: *test-template
     docker:
-    - image: circleci/python:3.7-stretch-browsers
+    - image: circleci/python:3.7
       environment:
         TOX: py37
         TOX_PYTHON_37: python
@@ -49,7 +49,7 @@ jobs:
   "python-3.8":
     <<: *test-template
     docker:
-    - image: circleci/python:3.8-stretch-browsers
+    - image: circleci/python:3.8
       environment:
         TOX: py38
         TOX_PYTHON_38: python
@@ -57,7 +57,7 @@ jobs:
   "python-3.9":
     <<: *test-template
     docker:
-    - image: circleci/python:3.9-stretch-browsers
+    - image: circleci/python:3.9
       environment:
         TOX: py39
         TOX_PYTHON_39: python
