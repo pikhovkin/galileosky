@@ -36,9 +36,9 @@ class Packet(object):
         len_packet = len(tags) | mask
         packet += struct.pack('<H', len_packet)
         packet += tags
-        crc16 = struct.pack('<H', libscrc.modbus(packet))
-        packet += crc16
-        return packet
+        crc16 = libscrc.modbus(packet)
+        packet += struct.pack('<H', crc16)
+        return packet, crc16
 
     @staticmethod
     def unpack(data: bytes, compress: bool=False, encrypt: bool=True):
