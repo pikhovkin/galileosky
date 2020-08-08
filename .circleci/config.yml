@@ -57,7 +57,7 @@ jobs:
   "python-3.9":
     <<: *test-template
     docker:
-    - image: circleci/python:3.9
+    - image: circleci/python:3.9-rc
       environment:
         TOX: py39
         TOX_PYTHON_39: python
