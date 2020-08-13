@@ -29,6 +29,17 @@ class Tag03(BaseTag):
     id = 0x03
     format = '15s'
 
+    @classmethod
+    def pack(cls, data):
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+        return super(Tag03, cls).pack(data)
+
+    @classmethod
+    def unpack(cls, data, offset=0):
+        data = super(Tag03, cls).unpack(data, offset=offset)
+        return data.decode('utf-8')
+
 
 class Tag04(BaseTag):
     id = 0x04

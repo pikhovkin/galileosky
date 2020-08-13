@@ -18,12 +18,14 @@ class SimpleTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request.recv(1024)
         headers, tags = Packet.unpack(data)
-        self.request.send(Packet.answer(headers['crc16']))
+        self.request.send(Packet.confirm(headers['crc16']))
 
 
 class SimpleTCPServer(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     request_queue_size = 1000
+    _block_on_close = False
+    daemon_threads = True
 
 
 class TestSimpleServer(unittest.TestCase):
@@ -53,7 +55,7 @@ class TestSimpleServer(unittest.TestCase):
                     packet = Packet()
                     packet.add(1, random.randrange(0, 256))
                     packet.add(2, random.randrange(0, 256))
-                    packet.add(3, b'862057047745531')
+                    packet.add(3, '862057047745531')
                     packet.add(0x04, random.randrange(0, 256))
                     true_data, crc16 = packet.pack()
 

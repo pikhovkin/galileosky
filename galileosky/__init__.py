@@ -16,7 +16,13 @@ class TagDoesNotExist(Exception):
     pass
 
 
+class CRCDoesNotMatch(Exception):
+    pass
+
+
 class Packet(object):
+    CRCDoesNotMatch = CRCDoesNotMatch
+
     def __init__(self):
         self._tags: list = []
 
@@ -65,5 +71,11 @@ class Packet(object):
         return headers, tags
 
     @staticmethod
-    def answer(crc16):
+    def confirm(crc16):
         return struct.pack('<B', 2) + struct.pack('<H', crc16)
+
+    @staticmethod
+    def check_crc(crc16, data):
+        header, answer = struct.unpack_from('<BH', data)
+        if answer != crc16:
+            raise CRCDoesNotMatch('CRC16 does not match')
