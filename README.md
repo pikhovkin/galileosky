@@ -1,5 +1,6 @@
 # galileosky
 
+[![GitHub Actions](https://github.com/pikhovkin/galileosky/workflows/build/badge.svg)](https://github.com/pikhovkin/galileosky/actions)
 [![CircleCI](https://img.shields.io/circleci/project/github/pikhovkin/galileosky.svg)](https://circleci.com/gh/pikhovkin/galileosky)
 [![PyPI](https://img.shields.io/pypi/v/galileosky.svg)](https://pypi.org/project/galileosky/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/galileosky.svg)
