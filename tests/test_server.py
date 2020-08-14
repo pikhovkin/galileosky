@@ -24,7 +24,6 @@ class SimpleTCPRequestHandler(socketserver.BaseRequestHandler):
 class SimpleTCPServer(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     request_queue_size = 1000
-    _block_on_close = False
     daemon_threads = True
 
 

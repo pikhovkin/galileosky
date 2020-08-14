@@ -20,8 +20,13 @@ class CRCDoesNotMatch(Exception):
     pass
 
 
+class ExtractPacketFailed(Exception):
+    pass
+
+
 class Packet(object):
     CRCDoesNotMatch = CRCDoesNotMatch
+    ExtractPacketFailed = ExtractPacketFailed
 
     def __init__(self):
         self._tags: list = []
@@ -51,14 +56,14 @@ class Packet(object):
         h, len_pack = struct.unpack_from('<BH', data)
         length = len_pack & 0b0111111111111111
         is_archive = len_pack & 0b1000000000000000 == 0b1000000000000000
-        crc16 = struct.unpack('<H', data[-2:])[0]
+        crc16 = struct.unpack_from('<H', data, offset=length + 3)[0]
         headers = {
             'header': h,
             'length': length,
             'is_archive': is_archive,
             'crc16': crc16,
         }
-        body = data[3:-2]
+        body = data[3:length + 3]
         offset = 0
         tags = OrderedDict()
         while offset < len(body):
@@ -71,11 +76,18 @@ class Packet(object):
         return headers, tags
 
     @staticmethod
-    def confirm(crc16):
+    def confirm(crc16: int) -> bytes:
         return struct.pack('<B', 2) + struct.pack('<H', crc16)
 
     @staticmethod
-    def check_crc(crc16, data):
+    def check_crc(crc16: int, data: bytes):
         header, answer = struct.unpack_from('<BH', data)
         if answer != crc16:
             raise CRCDoesNotMatch('CRC16 does not match')
+
+    @classmethod
+    def extract(cls, data: bytes):
+        try:
+            return cls.unpack(data)
+        except struct.error:
+            raise ExtractPacketFailed('Extract packet failed')
