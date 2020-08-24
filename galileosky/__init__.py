@@ -1,5 +1,6 @@
 import struct
 from collections import OrderedDict
+from typing import Optional, Dict
 
 import libscrc
 
@@ -8,6 +9,8 @@ from .tags import tags as TAGS
 
 __all__ = (
     'TagDoesNotExist',
+    'CRCDoesNotMatch',
+    'ExtractPacketFailed',
     'Packet',
 )
 
@@ -25,23 +28,24 @@ class ExtractPacketFailed(Exception):
 
 
 class Packet(object):
+    TagDoesNotExist = TagDoesNotExist
     CRCDoesNotMatch = CRCDoesNotMatch
     ExtractPacketFailed = ExtractPacketFailed
 
     def __init__(self):
         self._tags: list = []
 
-    def add(self, tag: int, data):
-        if tag not in TAGS:
-            raise TagDoesNotExist(f'Tag {tag} does not exist')
+    def add(self, tag_id: int, data):
+        if tag_id not in TAGS:
+            raise TagDoesNotExist(f'Tag {tag_id} does not exist')
         # TODO: Check data
-        self._tags.append((tag, data))
+        self._tags.append((tag_id, data))
 
-    def pack(self, is_archive: bool=True, compress: bool=False, encrypt: bool=True):
+    def pack(self, is_archive: bool=True):
         packet = struct.pack('<B', 1)
         tags = b''
-        for t, data in self._tags:
-            tags += TAGS[t].pack(data)
+        for tag_id, data in self._tags:
+            tags += struct.pack('<B', tag_id) + TAGS[tag_id].pack(data)
 
         mask = 0b1000000000000000 if is_archive else 0b0000000000000000
         len_packet = len(tags) | mask
@@ -52,7 +56,7 @@ class Packet(object):
         return packet, crc16
 
     @staticmethod
-    def unpack(data: bytes, compress: bool=False, encrypt: bool=True):
+    def unpack(data: bytes):
         h, len_pack = struct.unpack_from('<BH', data)
         length = len_pack & 0b0111111111111111
         is_archive = len_pack & 0b1000000000000000 == 0b1000000000000000
@@ -65,15 +69,26 @@ class Packet(object):
         }
         body = data[3:length + 3]
         offset = 0
-        tags = OrderedDict()
+        packet = []
+        record = OrderedDict()
+        last_tag_id = 0
         while offset < len(body):
-            b = body[offset]
-            tag = TAGS[b]
+            tag_id = body[offset]
+
+            if last_tag_id >= tag_id:
+                packet.append(record)
+                record = OrderedDict()
+
+            tag = TAGS[tag_id]
             value = tag.unpack(body, offset=offset + 1)
             offset += tag.size + 1
-            tags[tag.id] = value
+            record[tag.id] = value
+            last_tag_id = tag_id
 
-        return headers, tags
+        if record:
+            packet.append(record)
+
+        return headers, packet
 
     @staticmethod
     def confirm(crc16: int) -> bytes:

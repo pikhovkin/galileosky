@@ -6,6 +6,7 @@ import unittest
 from queue import Queue
 import random
 import struct
+import time
 
 from galileosky import Packet
 
@@ -19,6 +20,33 @@ class SimpleTCPRequestHandler(socketserver.BaseRequestHandler):
         data = self.request.recv(1024)
         headers, tags = Packet.unpack(data)
         self.request.send(Packet.confirm(headers['crc16']))
+
+        buf = bytearray()
+        timeout = 10
+        t1 = time.time()
+        while 1:
+            try:
+                data = self.request.recv(1024)
+            except ConnectionResetError:
+                break
+
+            if not data:
+                time.sleep(1)
+                if t1 + timeout < time.time():
+                    break
+                continue
+
+            t1 = time.time()
+
+            buf += data
+
+            try:
+                headers, tags = Packet.extract(buf)
+            except Packet.ExtractPacketFailed:
+                continue
+
+            self.request.send(Packet.confirm(headers['crc16']))
+            buf = buf[headers['length'] + 5:]
 
 
 class SimpleTCPServer(socketserver.ThreadingTCPServer):
@@ -52,10 +80,10 @@ class TestSimpleServer(unittest.TestCase):
                     tasks -= 1
 
                     packet = Packet()
-                    packet.add(1, random.randrange(0, 256))
-                    packet.add(2, random.randrange(0, 256))
-                    packet.add(3, '862057047745531')
-                    packet.add(0x04, random.randrange(0, 256))
+                    packet.add(1, dict(hardware=random.randrange(0, 256)))
+                    packet.add(2, dict(firmware=random.randrange(0, 256)))
+                    packet.add(3, dict(imei='862057047745531'))
+                    packet.add(0x04, dict(terminal_id=random.randrange(0, 256)))
                     true_data, crc16 = packet.pack()
 
                     if random.randrange(0, 2):
@@ -82,7 +110,7 @@ class TestSimpleServer(unittest.TestCase):
         q_output = Queue()
 
         CLIENTS = 1000
-        MESSAGES = 10
+        MESSAGES = 2
 
         for r in range(CLIENTS):
             q_input.put(MESSAGES)
