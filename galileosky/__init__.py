@@ -1,6 +1,6 @@
 import struct
 from collections import OrderedDict
-from typing import Optional, Dict
+from typing import Optional, Dict, Tuple
 
 import libscrc
 
@@ -56,7 +56,7 @@ class Packet(object):
         return packet, crc16
 
     @staticmethod
-    def unpack(data: bytes):
+    def unpack(data: bytes, conf: Optional[Dict]=None) -> Tuple:
         h, len_pack = struct.unpack_from('<BH', data)
         length = len_pack & 0b0111111111111111
         is_archive = len_pack & 0b1000000000000000 == 0b1000000000000000
@@ -80,9 +80,10 @@ class Packet(object):
                 record = OrderedDict()
 
             tag = TAGS[tag_id]
-            value = tag.unpack(body, offset=offset + 1)
+            value = tag.unpack(body, offset=offset + 1, conf=conf)
             offset += tag.size + 1
             record[tag.id] = value
+            tag.process_record(record, conf=conf or {})
             last_tag_id = tag_id
 
         if record:
@@ -106,3 +107,7 @@ class Packet(object):
             return cls.unpack(data)
         except struct.error:
             raise ExtractPacketFailed('Extract packet failed')
+
+    @staticmethod
+    def register(tag):
+        TAGS[tag.id] = tag

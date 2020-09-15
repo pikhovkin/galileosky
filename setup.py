@@ -4,13 +4,13 @@ from setuptools import setup, find_packages
 
 setup(
     name='galileosky',
-    version='0.5.0',
+    version='0.6.0',
     author='Sergei Pikhovkin',
     author_email='s@pikhovkin.ru',
     packages=find_packages(exclude=['tests*']),
     include_package_data=True,
     license='MIT',
-    description=('galileosky protocol implementation'),
+    description='galileosky protocol implementation',
     long_description=io.open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     install_requires=[
@@ -22,7 +22,7 @@ setup(
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',

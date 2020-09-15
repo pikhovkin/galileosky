@@ -29,7 +29,17 @@ class BaseTag(object):
         return cls.to_dict(data, conf or {})
 
     @classmethod
-    def test_data(cls):
+    def process_record(cls, record: Dict, conf: Optional[Dict]=None) -> None:
+        """Change a record
+
+        :param record:
+        :param conf:
+        :return:
+        """
+        ...
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {cls.name: random.randrange(256)}
 
 
@@ -62,9 +72,9 @@ class Tag03(BaseTag):
         return {cls.name: value[0].decode('utf-8')}
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
-            'imei': ''.join([str(random.randrange(0, 10)) for i in range(15)])
+            cls.name: ''.join([str(random.randrange(0, 10)) for i in range(15)])
         }
 
 
@@ -108,7 +118,7 @@ class Tag30(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'nsat': int(random.randrange(0, 16)),
             'source_type': int(random.randrange(0, 16)),
@@ -134,7 +144,7 @@ class Tag33(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'speed': random.randrange(60),
             'course': random.randrange(360),
@@ -198,7 +208,7 @@ class Tag44(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'a_x': random.randrange(256),
             'a_y': random.randrange(256),
@@ -241,7 +251,7 @@ class Tag47(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'ecodrive_acceleration': random.randrange(100, 256, 5) / 100,
             'ecodrive_deceleration': random.randrange(100, 256, 5) / 100,
@@ -336,7 +346,7 @@ class Tag5B(BaseTag):
         return {}  # TODO: !!!
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return
 
 
@@ -391,7 +401,7 @@ class Tag5C(BaseTag):
         return cls.to_dict(data, conf or {})
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         if not random.randrange(2):
             return {}
 
@@ -421,7 +431,7 @@ class Tag5D(BaseTag):
         return {}  # TODO:
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return
 
 
@@ -460,7 +470,7 @@ class Tag63(BaseTag):
         }
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             f'{cls.name}_fuel': random.randrange(256),
             f'{cls.name}_t': random.randrange(256),
@@ -556,7 +566,7 @@ class Tag70(BaseTag):
         }
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             f'{cls.name}_id': random.randrange(256),
             f'{cls.name}_t': random.randrange(256),
@@ -637,7 +647,7 @@ class Tag80(BaseTag):
         }
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             f'{cls.name}_id': random.randrange(256),
             f'{cls.name}_t': random.randrange(256),
@@ -895,7 +905,7 @@ class TagC0(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'can_spent_fuel': random.randrange(256),
         }
@@ -922,7 +932,7 @@ class TagC1(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'can_fuel_balance': random.randrange(0, 103, 2),
             'can_coolant_t': random.randrange(0, 256 - 40),
@@ -946,7 +956,7 @@ class TagC2(BaseTag):
         )
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             'can_mileage': random.randrange(0, 256, 5),
         }
@@ -1188,7 +1198,7 @@ class TagEA(BaseTag):
         return {cls.name: list(value)}
 
     @classmethod
-    def test_data(cls):
+    def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {cls.name: [8, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
@@ -1259,3 +1269,6 @@ while _tags:
     t.size = struct.calcsize(f'<{t.format}')
     tags[t.id] = t
     _tags.extend(t.__subclasses__())
+
+
+__all__ = tuple(tags.values())
