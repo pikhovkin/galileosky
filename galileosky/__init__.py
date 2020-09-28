@@ -80,10 +80,9 @@ class Packet(object):
                 record = OrderedDict()
 
             tag = TAGS[tag_id]
-            value = tag.unpack(body, offset=offset + 1, conf=conf)
+            value = tag.unpack(body, offset=offset + 1, record=record, conf=conf or {})
             offset += tag.size + 1
             record[tag.id] = value
-            tag.process_record(record, conf=conf or {})
             last_tag_id = tag_id
 
         if record:

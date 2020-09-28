@@ -15,7 +15,7 @@ class BaseTag(object):
         return (int(value[cls.name]),)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {cls.name: value[0]}
 
     @classmethod
@@ -24,19 +24,9 @@ class BaseTag(object):
         return struct.pack(f'<{cls.format}', *data)
 
     @classmethod
-    def unpack(cls, value: bytes, offset: int=0, conf: Optional[Dict]=None) -> Dict:
+    def unpack(cls, value: bytes, offset: int=0, record: Optional[Dict]=None, conf: Optional[Dict]=None) -> Dict:
         data = struct.unpack_from(f'<{cls.format}', value, offset=offset)
-        return cls.to_dict(data, conf or {})
-
-    @classmethod
-    def process_record(cls, record: Dict, conf: Optional[Dict]=None) -> None:
-        """Change a record
-
-        :param record:
-        :param conf:
-        :return:
-        """
-        ...
+        return cls.to_dict(data, record or {}, conf or {})
 
     @classmethod
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
@@ -68,7 +58,7 @@ class Tag03(BaseTag):
         return (imei,)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {cls.name: value[0].decode('utf-8')}
 
     @classmethod
@@ -109,7 +99,7 @@ class Tag30(BaseTag):
         return (B1, lat, lon)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             nsat=value[0] & 0xf,
             source_type=(value[0] & 0xf0) >> 4,
@@ -137,7 +127,7 @@ class Tag33(BaseTag):
         return int(value['speed'] * 10), int(value['course'] * 10)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             speed=value[0] / 10,  # km/h
             course=value[1] / 10,  # degrees
@@ -200,7 +190,7 @@ class Tag44(BaseTag):
         return (a_z | a_y | a_x,)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             a_x=value[0] & 0x3ff,
             a_y=(value[0] & 0xffc00) >> 10,
@@ -242,7 +232,7 @@ class Tag47(BaseTag):
         return (ed_a, ed_dea, ed_aa, ed_bump)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             ecodrive_acceleration=value[0] / 100,  # g = m/s^2
             ecodrive_deceleration=value[1] / 100,  # g = m/s^2
@@ -342,7 +332,7 @@ class Tag5B(BaseTag):
         return
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {}  # TODO: !!!
 
     @classmethod
@@ -372,7 +362,7 @@ class Tag5C(BaseTag):
         return tuple(data)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         if len(value) == 1:
             return {}
 
@@ -395,10 +385,10 @@ class Tag5C(BaseTag):
         return struct.pack(f'<{format}', *data)
 
     @classmethod
-    def unpack(cls, value: bytes, offset: int = 0, conf: Optional[Dict] = None) -> Dict:
+    def unpack(cls, value: bytes, offset: int = 0, record: Optional[Dict]=None, conf: Optional[Dict]=None) -> Dict:
         format = 'H' if value[offset:offset + 2] == b'\xff\x00' else cls.format
         data = struct.unpack_from(f'<{format}', value, offset=offset)
-        return cls.to_dict(data, conf or {})
+        return cls.to_dict(data, record or {}, conf or {})
 
     @classmethod
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
@@ -427,7 +417,7 @@ class Tag5D(BaseTag):
         return
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {}  # TODO:
 
     @classmethod
@@ -463,7 +453,7 @@ class Tag63(BaseTag):
         return (int(value[f'{cls.name}_fuel']), int(value[f'{cls.name}_t']))
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {
             f'{cls.name}_fuel': value[0],  # liters
             f'{cls.name}_t': value[1],  # °С
@@ -559,7 +549,7 @@ class Tag70(BaseTag):
         return (int(value[f'{cls.name}_id']), int(value[f'{cls.name}_t']))
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {
             f'{cls.name}_id': value[0],
             f'{cls.name}_t': value[1],
@@ -639,7 +629,7 @@ class Tag80(BaseTag):
                 int(value[f'{cls.name}_humidity'] * 255 / 100))
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {
             f'{cls.name}_id': value[0],
             f'{cls.name}_t': value[1],  # °С
@@ -899,7 +889,7 @@ class TagC0(BaseTag):
         return (int(value['can_spent_fuel'] * 2),)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             can_spent_fuel=value[0] * 0.5,  # liters
         )
@@ -924,7 +914,7 @@ class TagC1(BaseTag):
         return (int(fuel_balance), int(t), int(engine_speed))
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             can_fuel_balance=value[0] * 0.4,  # %
             can_coolant_t=value[1] - 40,  # °C
@@ -950,7 +940,7 @@ class TagC2(BaseTag):
         return (int(value['can_mileage'] / 5),)
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return dict(
             can_mileage=value[0] * 5,  # meters
         )
@@ -1194,7 +1184,7 @@ class TagEA(BaseTag):
         return tuple(value[cls.name])
 
     @classmethod
-    def to_dict(cls, value: Tuple, conf: Dict) -> Dict:
+    def to_dict(cls, value: Tuple, record: Dict, conf: Dict) -> Dict:
         return {cls.name: list(value)}
 
     @classmethod

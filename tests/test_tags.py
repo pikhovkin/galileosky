@@ -30,6 +30,7 @@ class TestTags(unittest.TestCase):
         headers, msgs = Packet.unpack(data)
         self.assertTrue(Tag01.name in msgs[0][tags.Tag01.id])
         self.assertTrue(tags.tags[Tag01.id].name == Tag01.name)
+        Packet.register(tags.Tag01)
 
     def test_process_together(self):
         tag2_id = tags.Tag02.id
@@ -41,12 +42,13 @@ class TestTags(unittest.TestCase):
 
         class Tag02(tags.Tag02):
             @classmethod
-            def process_record(cls, msg, conf=None):
-                msg[cls.id][new_name] = msg[cls.id].pop('firmware')
+            def to_dict(cls, value, msg, conf):
+                v = {new_name: value[0]}
                 if (conf or {}).get('add_hw'):
-                    msg[cls.id][add_name] = f'{msg[tags.Tag01.id][tags.Tag01.name]}:{msg[cls.id][new_name]}'
+                    v[add_name] = f'{msg[tags.Tag01.id][tags.Tag01.name]}:{v[new_name]}'
                 else:
-                    msg[cls.id][add_name] = '0'
+                    v[add_name] = '0'
+                return v
 
         packet = Packet()
         packet.add(tags.Tag01.id, {tags.Tag01.name: tag1_value})
@@ -67,3 +69,5 @@ class TestTags(unittest.TestCase):
         self.assertTrue(new_name in msgs[0][tag2_id])
         self.assertTrue(add_name in msgs[0][tag2_id])
         self.assertTrue(msgs[0][tag2_id][add_name] == f'{tag1_value}:{tag2_value}')
+
+        Packet.register(tags.Tag02)
