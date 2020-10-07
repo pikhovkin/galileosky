@@ -88,7 +88,7 @@ class Tag20(BaseTag):
 
 class Tag30(BaseTag):
     id = 0x30
-    format = 'BII'
+    format = 'Bii'
     name = 'navigation'
 
     @classmethod
@@ -112,8 +112,8 @@ class Tag30(BaseTag):
         return {
             'nsat': int(random.randrange(0, 16)),
             'source_type': int(random.randrange(0, 16)),
-            'lat': int(random.random() * 100000000) / 1000000,
-            'lon': int(random.random() * 100000000) / 1000000,
+            'lat': int(random.random() * random.choice((-1, 1)) * 100000000) / 1000000,
+            'lon': int(random.random() * random.choice((-1, 1)) * 100000000) / 1000000,
         }
 
 
@@ -143,8 +143,12 @@ class Tag33(BaseTag):
 
 class Tag34(BaseTag):
     id = 0x34
-    format = 'H'
+    format = 'h'
     name = 'height'  # meters
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag35(BaseTag):
@@ -173,8 +177,12 @@ class Tag42(BaseTag):
 
 class Tag43(BaseTag):
     id = 0x43
-    format = 'B'
+    format = 'b'
     name = 't'  # °С
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag44(BaseTag):
@@ -445,7 +453,7 @@ class Tag62(BaseTag):
 
 class Tag63(BaseTag):
     id = 0x63
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_3'
 
     @classmethod
@@ -463,85 +471,85 @@ class Tag63(BaseTag):
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             f'{cls.name}_fuel': random.randrange(256),
-            f'{cls.name}_t': random.randrange(256),
+            f'{cls.name}_t': random.randrange(-128, 128),
         }
 
 
 class Tag64(Tag63):
     id = 0x64
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_4'
 
 
 class Tag65(Tag63):
     id = 0x65
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_5'
 
 
 class Tag66(Tag63):
     id = 0x66
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_6'
 
 
 class Tag67(Tag63):
     id = 0x67
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_7'
 
 
 class Tag68(Tag63):
     id = 0x68
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_8'
 
 
 class Tag69(Tag63):
     id = 0x69
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_9'
 
 
 class Tag6A(Tag63):
     id = 0x6A
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_10'
 
 
 class Tag6B(Tag63):
     id = 0x6B
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_11'
 
 
 class Tag6C(Tag63):
     id = 0x6C
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_12'
 
 
 class Tag6D(Tag63):
     id = 0x6D
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_13'
 
 
 class Tag6E(Tag63):
     id = 0x6E
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_14'
 
 
 class Tag6F(Tag63):
     id = 0x6F
-    format = 'HB'
+    format = 'Hb'
     name = 'rs485_15'
 
 
 class Tag70(BaseTag):
     id = 0x70
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer0'
 
     @classmethod
@@ -559,49 +567,49 @@ class Tag70(BaseTag):
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             f'{cls.name}_id': random.randrange(256),
-            f'{cls.name}_t': random.randrange(256),
+            f'{cls.name}_t': random.randrange(-128, 128),
         }
 
 
 class Tag71(Tag70):
     id = 0x71
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer1'
 
 
 class Tag72(Tag70):
     id = 0x72
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer2'
 
 
 class Tag73(Tag70):
     id = 0x73
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer3'
 
 
 class Tag74(Tag70):
     id = 0x74
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer4'
 
 
 class Tag75(Tag70):
     id = 0x75
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer5'
 
 
 class Tag76(Tag70):
     id = 0x76
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer6'
 
 
 class Tag77(Tag70):
     id = 0x77
-    format = 'BB'
+    format = 'Bb'
     name = 'thermometer7'
 
 
@@ -619,7 +627,7 @@ class Tag79(BaseTag):
 
 class Tag80(BaseTag):
     id = 0x80
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_0'
 
     @classmethod
@@ -640,81 +648,101 @@ class Tag80(BaseTag):
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
         return {
             f'{cls.name}_id': random.randrange(256),
-            f'{cls.name}_t': random.randrange(256),
+            f'{cls.name}_t': random.randrange(-128, 128),
             f'{cls.name}_humidity': random.randrange(0, 101, 20),
         }
 
 
 class Tag81(Tag80):
     id = 0x81
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_1'
 
 
 class Tag82(Tag80):
     id = 0x82
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_2'
 
 
 class Tag83(Tag80):
     id = 0x83
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_3'
 
 
 class Tag84(Tag80):
     id = 0x84
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_4'
 
 
 class Tag85(Tag80):
     id = 0x85
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_5'
 
 
 class Tag86(Tag80):
     id = 0x86
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_6'
 
 
 class Tag87(Tag80):
     id = 0x87
-    format = '3B'
+    format = 'BbB'
     name = 'ds1923_7'
 
 
 class Tag88(BaseTag):
     id = 0x88
-    format = 'B'
+    format = 'b'
     name = 'rs232_01_tw'
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag89(BaseTag):
     id = 0x89
-    format = 'B'
+    format = 'b'
     name = 'rs232_1_tw'
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag8A(BaseTag):
     id = 0x8A
-    format = 'B'
+    format = 'b'
     name = 'rs485_0_t'
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag8B(BaseTag):
     id = 0x8B
-    format = 'B'
+    format = 'b'
     name = 'rs485_1_t'
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag8C(BaseTag):
     id = 0x8C
-    format = 'B'
+    format = 'b'
     name = 'rs485_2_t'
+
+    @classmethod
+    def test_data(cls, conf: Optional[Dict] = None) -> Dict:
+        return {cls.name: random.randrange(-128, 128)}
 
 
 class Tag90(BaseTag):
