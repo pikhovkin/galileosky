@@ -42,7 +42,7 @@ class TestTags(unittest.TestCase):
 
         class Tag02(tags.Tag02):
             @classmethod
-            def to_dict(cls, value, msg, conf):
+            def to_dict(cls, value, msg, hp, conf):
                 v = {new_name: value[0]}
                 if (conf or {}).get('add_hw'):
                     v[add_name] = f'{msg[tags.Tag01.id][tags.Tag01.name]}:{v[new_name]}'

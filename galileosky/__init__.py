@@ -56,7 +56,7 @@ class Packet(object):
         return packet, crc16
 
     @staticmethod
-    def unpack(data: bytes, conf: Optional[Dict]=None) -> Tuple:
+    def unpack(data: bytes, conf: Optional[Dict]=None, header_packet: Optional[Dict]=None) -> Tuple:
         h, len_pack = struct.unpack_from('<BH', data)
         length = len_pack & 0b0111111111111111
         is_archive = len_pack & 0b1000000000000000 == 0b1000000000000000
@@ -69,6 +69,7 @@ class Packet(object):
         }
         body = data[3:length + 3]
         offset = 0
+        hp = header_packet or OrderedDict()
         packet = []
         record = OrderedDict()
         last_tag_id = 0
@@ -80,7 +81,7 @@ class Packet(object):
                 record = OrderedDict()
 
             tag = TAGS[tag_id]
-            value = tag.unpack(body, offset=offset + 1, record=record, conf=conf or {})
+            value = tag.unpack(body, offset=offset + 1, record=record, header_packet=hp, conf=conf or {})
             offset += tag.size + 1
             record[tag.id] = value
             last_tag_id = tag_id
@@ -101,9 +102,9 @@ class Packet(object):
             raise CRCDoesNotMatch('CRC16 does not match')
 
     @classmethod
-    def extract(cls, data: bytes):
+    def extract(cls, data: bytes, header_packet: Optional[Dict]=None):
         try:
-            return cls.unpack(data)
+            return cls.unpack(data, header_packet=header_packet)
         except struct.error:
             raise ExtractPacketFailed('Extract packet failed')
 
