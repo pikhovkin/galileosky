@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='galileosky',
-    version='0.9.0',
+    version='0.9.1',
     author='Sergei Pikhovkin',
     author_email='s@pikhovkin.ru',
     packages=find_packages(exclude=['tests*']),
@@ -14,7 +14,7 @@ setup(
     long_description=io.open('README.md', encoding='utf-8').read(),
     long_description_content_type='text/markdown',
     install_requires=[
-        'libscrc==1.3',
+        'libscrc==1.6',
     ],
     python_requires='>=3.6',
     url='https://github.com/pikhovkin/galileosky',
