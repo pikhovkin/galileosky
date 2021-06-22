@@ -110,4 +110,5 @@ class Packet(object):
 
     @staticmethod
     def register(tag):
+        tag.size = struct.calcsize(f'<{tag.format}')
         TAGS[tag.id] = tag
