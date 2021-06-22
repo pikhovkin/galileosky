@@ -81,8 +81,8 @@ class Packet(object):
                 record = OrderedDict()
 
             tag = TAGS[tag_id]
-            value = tag.unpack(body, offset=offset + 1, record=record, header_packet=hp, conf=conf or {})
-            offset += tag.size + 1
+            value, size = tag.unpack(body, offset=offset + 1, record=record, header_packet=hp, conf=conf or {})
+            offset += size + 1
             record[tag.id] = value
             last_tag_id = tag_id
 
@@ -102,7 +102,7 @@ class Packet(object):
             raise CRCDoesNotMatch('CRC16 does not match')
 
     @classmethod
-    def extract(cls, data: bytes, header_packet: Optional[Dict]=None):
+    def extract(cls, data: bytes, header_packet: Optional[Dict]=None) -> Tuple:
         try:
             return cls.unpack(data, header_packet=header_packet)
         except struct.error:

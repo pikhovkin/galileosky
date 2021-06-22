@@ -4,6 +4,43 @@ from typing import Dict, Optional, Tuple
 import random
 
 
+class AutoFormat(object):
+    @staticmethod
+    def less_than_8_bytes(b):
+        if b == 0:
+            return ''
+        elif b == 1:
+            return 'B'
+        elif b == 2:
+            return 'H'
+        elif b == 3:
+            return 'HB'
+        elif b == 4:
+            return 'I'
+        elif b == 5:
+            return 'IB'
+        elif b == 6:
+            return 'IH'
+        elif b == 7:
+            return 'IHB'
+        return ''
+
+    @classmethod
+    def for_pack(cls, data):
+        f = ''
+        for v in data:
+            if isinstance(v, int):
+                f += 'q' if v < 0 else 'Q'
+            else:
+                f += 'd'
+        return f
+
+    @classmethod
+    def for_unpack(cls, length):
+        size, m = divmod(length, 8)
+        return f"{'Q' * size}{cls.less_than_8_bytes(m)}"
+
+
 class BaseTag(object):
     id = 0
     format = ''
@@ -31,9 +68,9 @@ class BaseTag(object):
             record: Optional[Dict]=None,
             header_packet: Optional[Dict]=None,
             conf: Optional[Dict]=None
-    ) -> Dict:
+    ) -> Tuple[Dict, int]:
         data = struct.unpack_from(f'<{cls.format}', value, offset=offset)
-        return cls.to_dict(data, record or {}, header_packet or {}, conf or {})
+        return cls.to_dict(data, record or {}, header_packet or {}, conf or {}), cls.size
 
     @classmethod
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
@@ -408,10 +445,10 @@ class Tag5C(BaseTag):
             record: Optional[Dict]=None,
             header_packet: Optional[Dict]=None,
             conf: Optional[Dict]=None
-    ) -> Dict:
+    ) -> Tuple[Dict, int]:
         format = 'H' if value[offset:offset + 2] == b'\xff\x00' else cls.format
         data = struct.unpack_from(f'<{format}', value, offset=offset)
-        return cls.to_dict(data, record or {}, header_packet or {}, conf or {})
+        return cls.to_dict(data, record or {}, header_packet or {}, conf or {}), cls.size
 
     @classmethod
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
@@ -1219,7 +1256,7 @@ class TagE9(BaseTag):
 
 class TagEA(BaseTag):
     id = 0xEA
-    format = '2BIHHIHHIHHIHHIHHIHHIHHIHH'
+    format = 'B'
     name = 'user_data_array'
 
     @classmethod
@@ -1231,8 +1268,40 @@ class TagEA(BaseTag):
         return {cls.name: list(value)}
 
     @classmethod
+    def pack(cls, value, conf: Optional[Dict] = None) -> bytes:
+        data = cls.from_dict(value, conf or {})
+        if cls is TagEA:
+            sub_format = AutoFormat.for_pack(data)
+        else:
+            sub_format, data = data
+
+        return struct.pack(f'<{cls.format}', struct.calcsize(f'<{sub_format}')) + struct.pack(f'<{sub_format}', *data)
+
+    @classmethod
+    def unpack(
+            cls,
+            value: bytes,
+            offset: int = 0,
+            record: Optional[dict] = None,
+            header_packet: Optional[dict] = None,
+            conf: Optional[dict] = None
+    ) -> Tuple[dict, int]:
+        data = struct.unpack_from(f'<{cls.format}', value, offset=offset)
+        length = data[0]
+
+        if cls is TagEA:
+            sub_format = AutoFormat.for_unpack(length)
+            data = struct.unpack_from(f'<{sub_format}', value, offset=offset + 1)
+        else:
+            body = value[offset + 1: offset + length + 1]
+            print(value[offset + 1: offset + length + 1].hex())
+            data = (length, body)
+
+        return cls.to_dict(data, record or {}, header_packet or {}, conf or {}), length + 1
+
+    @classmethod
     def test_data(cls, conf: Optional[Dict]=None) -> Dict:
-        return {cls.name: [8, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
+        return {cls.name: [8, 10, 0, 1000_000_000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}
 
 
 class TagF0(BaseTag):

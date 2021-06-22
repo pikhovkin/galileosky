@@ -11,7 +11,7 @@ class TestTags(unittest.TestCase):
                 continue
 
             data = tag.pack(value)
-            self.assertDictEqual(value, tag.unpack(data))
+            self.assertDictEqual(value, tag.unpack(data)[0])
 
     def test_replace_tag_name(self):
         class Tag01(tags.Tag01):
