@@ -1294,7 +1294,6 @@ class TagEA(BaseTag):
             data = struct.unpack_from(f'<{sub_format}', value, offset=offset + 1)
         else:
             body = value[offset + 1: offset + length + 1]
-            print(value[offset + 1: offset + length + 1].hex())
             data = (length, body)
 
         return cls.to_dict(data, record or {}, header_packet or {}, conf or {}), length + 1
